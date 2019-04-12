@@ -162,7 +162,7 @@ public class SShController {
             }
             //   channel.disconnect();
             //    session.disconnect();
-            System.out.println("he");
+           // System.out.println("hejhhj");
 
         } catch (Exception e) {
             e.printStackTrace();
