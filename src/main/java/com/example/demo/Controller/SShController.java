@@ -184,7 +184,7 @@ public class SShController {
 
 //copy file VM vers localhost
 @RequestMapping(value = "/copy", method = RequestMethod.POST)
-    private  void copyRemoteToLocal(@RequestBody Genero copy) throws JSchException, IOException {
+    public  void copyRemoteToLocal(@RequestBody Genero copy) throws JSchException, IOException {
 
 
     ChannelSftp channelSftp = null;
@@ -214,32 +214,36 @@ public class SShController {
         //session.disconnect();
     }
 
-    public static int checkAck(InputStream in) throws IOException {
-        int b = in.read();
-        // b may be 0 for success,
-        //          1 for error,
-        //          2 for fatal error,
-        //         -1
-        if (b == 0) return b;
-        if (b == -1) return b;
+    //copy file local vers VM
+    @RequestMapping(value = "/upload", method = RequestMethod.POST)
+    public  void copyLocalToRemote(@RequestBody Genero copy) throws Exception {
+        try {
+            Channel channel = session.openChannel("sftp");
+            channel.connect();
+            ChannelSftp sftp = (ChannelSftp) channel;
 
-        if (b == 1 || b == 2) {
-            StringBuffer sb = new StringBuffer();
-            int c;
-            do {
-                c = in.read();
-                sb.append((char) c);
+            sftp.cd("/tmp");
+            sftp.put(copy.getFrom(), copy.getTo());
+
+            Boolean success = true;
+
+            if (success) {
+                System.out.println("The file has been uploaded succesfully");
+     //           return "succesfully";
             }
-            while (c != '\n');
-            if (b == 1) { // error
-                System.out.print(sb.toString());
-            }
-            if (b == 2) { // fatal error
-                System.out.print(sb.toString());
-            }
+
+           // channel.disconnect();
+
+        } catch (JSchException e) {
+            throw e;
+
+        } catch (SftpException e) {
+            throw e;
+
         }
-        return b;
+   //     return "The file has been ...";
     }
+
 
 
 
