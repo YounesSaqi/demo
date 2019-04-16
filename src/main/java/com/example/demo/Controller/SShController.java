@@ -3,6 +3,7 @@ package com.example.demo.Controller;
 
 import com.example.demo.DAO.SShDAO;
 import com.example.demo.Entities.Commande;
+import com.example.demo.Entities.Genero;
 import com.example.demo.Entities.SSHConnection;
 import com.example.demo.Entities.sqlhost;
 import com.jcraft.jsch.*;
@@ -11,8 +12,7 @@ import com.jcraft.jsch.Channel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 
 @RestController
 @CrossOrigin("*")
@@ -108,7 +108,7 @@ public class SShController {
 
 
     //copy fichier local vers server linux
-    @RequestMapping(value = "/copy", method = RequestMethod.POST)
+    @RequestMapping(value = "/co", method = RequestMethod.POST)
     public void copyfichier(String local,String host){
 
 
@@ -180,4 +180,67 @@ public class SShController {
          System.out.println("DONE");
          return "deconnect";
      }
+
+
+//copy file VM vers localhost
+@RequestMapping(value = "/copy", method = RequestMethod.POST)
+    private  void copyRemoteToLocal(@RequestBody Genero copy) throws JSchException, IOException {
+
+
+    ChannelSftp channelSftp = null;
+    try{
+     Channel channel = session.openChannel("sftp");
+  //   ((ChannelExec)channel).setPty(true);
+    channel.connect();
+    channelSftp = (ChannelSftp) channel;
+    channelSftp.cd("/tmp");
+    byte[] buffer = new byte[1024];
+    BufferedInputStream bis = new BufferedInputStream(channelSftp.get(copy.getFrom()+"/"+copy.getFile()));
+    File newFile = new File("d:\\Profiles\\ysaqi\\Desktop\\tmp\\" + copy.getFile());
+    OutputStream os = new FileOutputStream(newFile);
+    BufferedOutputStream bos = new BufferedOutputStream(os);
+    int readCount;
+    while ((readCount = bis.read(buffer)) > 0) {
+        System.out.println("Writing: ");
+        bos.write(buffer, 0, readCount);
+    }
+    bis.close();
+    bos.close();
+} catch (Exception ex) {
+        ex.printStackTrace();
+    }
+
+      //  channel.disconnect();
+        //session.disconnect();
+    }
+
+    public static int checkAck(InputStream in) throws IOException {
+        int b = in.read();
+        // b may be 0 for success,
+        //          1 for error,
+        //          2 for fatal error,
+        //         -1
+        if (b == 0) return b;
+        if (b == -1) return b;
+
+        if (b == 1 || b == 2) {
+            StringBuffer sb = new StringBuffer();
+            int c;
+            do {
+                c = in.read();
+                sb.append((char) c);
+            }
+            while (c != '\n');
+            if (b == 1) { // error
+                System.out.print(sb.toString());
+            }
+            if (b == 2) { // fatal error
+                System.out.print(sb.toString());
+            }
+        }
+        return b;
+    }
+
+
+
     }
