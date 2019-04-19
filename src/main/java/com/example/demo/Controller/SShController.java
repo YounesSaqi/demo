@@ -120,14 +120,14 @@ public class SShController {
         String chaine=shost.getInstance()+"="+ "\\(DESCRIPTION =" +
 
                 "\\(ADDRESS = \\(PROTOCOL = TCP\\)\\( HOST = "+shost.getIp() +" \\)\\(PORT ="+shost.getPort()  +
-               
+
                 "\\)\\)\\(CONNECT_DATA =" +
 
                 "\\(SERVER = DEDICATED\\)" +
                 "\\(SERVICE_NAME ="+shost.getInstance()+"\\)\\)\\)";
         String CommandOutput = null;
         try {
-            // System.out.println("Connected");
+            //System.out.println("Connected");
             Channel channel = session.openChannel("exec");
             ((ChannelExec)channel).setPty(true);
             InputStream in = channel.getInputStream();
