@@ -120,7 +120,7 @@ public class SShController {
         String chaine=shost.getInstance()+"="+ "\\(DESCRIPTION =" +
 
                 "\\(ADDRESS = \\(PROTOCOL = TCP\\)\\( HOST = "+shost.getIp() +" \\)\\(PORT ="+shost.getPort()  +
-
+               
                 "\\)\\)\\(CONNECT_DATA =" +
 
                 "\\(SERVER = DEDICATED\\)" +
