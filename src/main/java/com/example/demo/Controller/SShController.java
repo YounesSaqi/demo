@@ -2,10 +2,7 @@ package com.example.demo.Controller;
 
 
 import com.example.demo.DAO.SShDAO;
-import com.example.demo.Entities.Commande;
-import com.example.demo.Entities.Genero;
-import com.example.demo.Entities.SSHConnection;
-import com.example.demo.Entities.sqlhost;
+import com.example.demo.Entities.*;
 import com.jcraft.jsch.*;
 import com.jcraft.jsch.ChannelSftp;
 import com.jcraft.jsch.Channel;
@@ -196,7 +193,7 @@ public class SShController {
     channelSftp.cd("/tmp");
     byte[] buffer = new byte[1024];
     BufferedInputStream bis = new BufferedInputStream(channelSftp.get(copy.getFrom()+"/"+copy.getFile()));
-    File newFile = new File("d:\\Profiles\\ysaqi\\Desktop\\tmp\\" + copy.getFile());
+    File newFile = new File("Scripts_Export/" + copy.getFile());
     OutputStream os = new FileOutputStream(newFile);
     BufferedOutputStream bos = new BufferedOutputStream(os);
     int readCount;
@@ -244,7 +241,72 @@ public class SShController {
    //     return "The file has been ...";
     }
 
+    @RequestMapping(value = "/commande_export", method = RequestMethod.POST)
+    public  void  exportDb(@RequestBody Export export) {
+        //   System.out.print(export.getUserBd() + " " + export.getPasswdBd() + " " + export.getSid() + " " + export.getTypeBd() +" "+export.getTypeExport()+" "+export.getNomObjExport());
+        String CommandOutput = null;
+        String cmd = "";
+        try {
+            // System.out.println("Connected");
+            Channel channel = session.openChannel("exec");
+            ((ChannelExec) channel).setPty(true);
+            InputStream in = channel.getInputStream();
+            channel.setInputStream(null);
+            ((ChannelExec) channel).setErrStream(System.err);
+
+            if (export.getTypeBd().equals("Oracle")) {
 
 
+                String directory = export.getCheminExport() + "export/";
+                if (!export.getTypeExport().equals("Full")) {
+                    cmd = "sh  " + export.getCheminExport() + "/export_oracle.sh " + export.getCheminExport() + " " + export.getUserBd() + " " + export.getPasswdBd() + " " + export.getSid() + " " + export.getTypeExport() + " " + export.getNomObjExport() + "";
+                    System.out.println(cmd);
+
+                } else {
+                    cmd = "sh  " + export.getCheminExport() + "/export_oracle.sh " + export.getCheminExport() + " " + export.getUserBd() + " " + export.getPasswdBd() + " " + export.getSid() + " " + export.getTypeExport() + "  Full";
+                    System.out.println(cmd);
+
+                }
+            } else {
+                // cmd="sudo su - `ls -l /work/install/profile|cut -d' ' -f3 | grep -v ' '|tail -1` -c 'sh "+ export.getCheminExport() +"/exportInformix.sh "+ export.getUserBd() +" "+export.getPasswdBd() +" "+export.getInstance()+" "+ export.getDatabase()+" "+export.getNomDump()+" "+ export.getTypeExport()+" " +export.getNomObjetAexporter()+"'";
+            }
+
+
+            ((ChannelExec) channel).setCommand(cmd);
+            ((ChannelExec) channel).setErrStream(System.err);
+
+
+            channel.connect();
+            byte[] tmp = new byte[1024];
+            while (true) {
+                while (in.available() > 0) {
+                    int i = in.read(tmp, 0, 1024);
+
+                    if (i < 0)
+                        break;
+
+
+                    CommandOutput = new String(tmp, 0, i);
+                }
+
+                if (channel.isClosed()) {
+                    // System.out.println("exit-status: " +
+                    // channel.getExitStatus());
+                    break;
+                }
+                try {
+                    Thread.sleep(1000);
+                } catch (Exception ee) {
+                }
+            }
+            //   channel.disconnect();
+            //    session.disconnect();
+            // System.out.println("DONE");
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 
     }
+
+}
